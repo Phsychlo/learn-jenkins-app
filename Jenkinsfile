@@ -1,7 +1,8 @@
 pipeline {
     agent any
-/*
+
     stages {
+/*    
         stage('Wipe') {
             steps {
                 cleanWs()
