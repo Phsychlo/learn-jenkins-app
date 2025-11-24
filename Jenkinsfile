@@ -1,7 +1,8 @@
 pipeline {
     agent any
 
-        stage('With Docker') {
+    stages {
+        stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -11,8 +12,8 @@ pipeline {
             steps {
                 sh '''
                     ls -la
-                    node -v
-                    npm -v
+                    node --version
+                    npm --version
                     npm ci
                     npm run build
                     ls -la
