@@ -67,7 +67,7 @@ pipeline {
                             # npm install -g serve
                             # serve -s build
 
-                            # 'serve' installed as a locally  & called using local path
+                            # 'serve' installed locally & called using local path
                             npm install serve
                             node_modules/.bin/serve -s build &
                             sleep 10
