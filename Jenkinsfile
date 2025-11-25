@@ -84,7 +84,7 @@ pipeline {
                                             alwaysLinkToLastBuild: false,
                                             icon: '',
                                             keepAll: false,
-                                            reportDir: 'local-playwright-report',
+                                            reportDir: 'playwright-report',
                                             reportFiles: 'index.html',
                                             reportName: 'Local Playwright HTML Report',
                                             reportTitles: '',
@@ -130,7 +130,7 @@ pipeline {
                 }
             }
             environment {
-                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+                CI_ENVIRONMENT_URL = "$env.STAGING_URL"
             }
             steps {
                 sh '''
@@ -147,7 +147,7 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'staging-playwright-report',
+                                    reportDir: 'playwright-report',
                                     reportFiles: 'index.html',
                                     reportName: 'Staging Playwright HTML Report',
                                     reportTitles: '',
@@ -196,7 +196,7 @@ pipeline {
                                     icon: '',
                                     keepAll: false,
                                     reportDir: 'playwright-report',
-                                    reportFiles: 'prod_index.html',
+                                    reportFiles: 'index.html',
                                     reportName: 'Prod Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
@@ -230,7 +230,7 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'prod-playwright-report',
+                                    reportDir: 'playwright-report',
                                     reportFiles: 'index.html',
                                     reportName: 'Prod Playwright HTML Report',
                                     reportTitles: '',
