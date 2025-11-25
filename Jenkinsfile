@@ -107,8 +107,12 @@ pipeline {
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build
-                    echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
+                    echo "Deploying to staging using site_id: $NETLIFY_SITE_ID"
+                    node_modules/.bin/netlify deploy --dir=build --json > netlify_staging.json
+
+                    npm install node-jq
+                    npm node-jq --version
+                    node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json
                 '''
             }    
         }
@@ -134,8 +138,9 @@ pipeline {
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --prod
+                    
                     echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
+                    node_modules/.bin/netlify deploy --dir=build --prod
                 '''
             }    
         }
