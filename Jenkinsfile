@@ -112,9 +112,53 @@ pipeline {
 
                     npm install node-jq
                     npm node-jq --version
-                    node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json
+                    # node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json
                 '''
+
+                script {
+                    env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json", returnStdout: true)
+                    echo "STAGING_URL is: ${env.STAGING_URL}"
+                }    
             }    
+        }
+
+       stage('Staging E2E tests') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    // args '-u root:root' Not good! as common workspace/files is being used which Jenkins may not be able to access subsequently 
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+            }
+            steps {
+                sh '''
+                    # 'serve' installed as a global dependency & called globally
+                    # npm install -g serve
+                    # serve -s build
+
+                    # 'serve' installed locally & called using local path
+                    npm install serve
+                    node_modules/.bin/serve -s build &
+                    sleep 10
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([   allowMissing: false,
+                                    alwaysLinkToLastBuild: false,
+                                    icon: '',
+                                    keepAll: false,
+                                    reportDir: 'playwright-report',
+                                    reportFiles: 'staging_index.html',
+                                    reportName: 'Staging Playwright HTML Report',
+                                    reportTitles: '',
+                                    useWrapperFileDirectly: true])
+                }
+            }
         }
 
         stage('Approval') {
@@ -138,18 +182,17 @@ pipeline {
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
-                    
+
                     echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify deploy --dir=build --prod
                 '''
             }    
         }
 
-        stage('Prod E2E') {
+        stage('Prod E2E tests') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    // args '-u root:root' Not good! as common workspace/files is being used which Jenkins may not be able to access subsequently 
                     reuseNode true
                 }
             }
@@ -158,10 +201,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    # 'serve' installed as a global dependency & called globally
-                    # npm install -g serve
-                    # serve -s build
-
                     # 'serve' installed locally & called using local path
                     npm install serve
                     node_modules/.bin/serve -s build &
