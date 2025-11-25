@@ -57,7 +57,7 @@ pipeline {
                     }
                 }
             
-                stage('E2E') {
+                stage('Local E2E') {
                     agent {
                         docker {
                             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -86,7 +86,7 @@ pipeline {
                                             keepAll: false,
                                             reportDir: 'playwright-report',
                                             reportFiles: 'index.html',
-                                            reportName: 'Playwright HTML Report',
+                                            reportName: 'Local Playwright HTML Report',
                                             reportTitles: '',
                                             useWrapperFileDirectly: true])
                         }
@@ -95,7 +95,7 @@ pipeline {
             }
         }
         
-        stage('Deploy') {
+        stage('Deploy prod') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -111,6 +111,45 @@ pipeline {
                     echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
                 '''
             }    
+        }
+
+        stage('Prod E2E') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    // args '-u root:root' Not good! as common workspace/files is being used which Jenkins may not be able to access subsequently 
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
+            }
+            steps {
+                sh '''
+                    # 'serve' installed as a global dependency & called globally
+                    # npm install -g serve
+                    # serve -s build
+
+                    # 'serve' installed locally & called using local path
+                    npm install serve
+                    node_modules/.bin/serve -s build &
+                    sleep 10
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([   allowMissing: false,
+                                    alwaysLinkToLastBuild: false,
+                                    icon: '',
+                                    keepAll: false,
+                                    reportDir: 'playwright-report',
+                                    reportFiles: 'index.html',
+                                    reportName: 'Prod Playwright HTML Report',
+                                    reportTitles: '',
+                                    useWrapperFileDirectly: true])
+                }
+            }
         }
     }
 }
