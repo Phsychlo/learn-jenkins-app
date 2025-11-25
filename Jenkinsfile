@@ -57,7 +57,7 @@ pipeline {
                     }
                 }
             
-                stage('Local E2E') {
+                stage('Local E2E tests') {
                     agent {
                         docker {
                             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -84,8 +84,8 @@ pipeline {
                                             alwaysLinkToLastBuild: false,
                                             icon: '',
                                             keepAll: false,
-                                            reportDir: 'playwright-report',
-                                            reportFiles: 'local_index.html',
+                                            reportDir: 'local-playwright-report',
+                                            reportFiles: 'index.html',
                                             reportName: 'Local Playwright HTML Report',
                                             reportTitles: '',
                                             useWrapperFileDirectly: true])
@@ -112,7 +112,7 @@ pipeline {
 
                     npm install node-jq
                     npm node-jq --version
-                    # node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json
+                    node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json
                 '''
 
                 script {
@@ -126,7 +126,6 @@ pipeline {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    // args '-u root:root' Not good! as common workspace/files is being used which Jenkins may not be able to access subsequently 
                     reuseNode true
                 }
             }
@@ -135,14 +134,10 @@ pipeline {
             }
             steps {
                 sh '''
-                    # 'serve' installed as a global dependency & called globally
-                    # npm install -g serve
-                    # serve -s build
-
                     # 'serve' installed locally & called using local path
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
+                    # npm install serve
+                    # node_modules/.bin/serve -s build &
+                    # sleep 10
                     npx playwright test --reporter=html
                 '''
             }
@@ -152,8 +147,8 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'playwright-report',
-                                    reportFiles: 'staging_index.html',
+                                    reportDir: 'staging-playwright-report',
+                                    reportFiles: 'index.html',
                                     reportName: 'Staging Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
@@ -170,12 +165,16 @@ pipeline {
             }
         }
 
-        stage('Deploy prod') {
+        stage('Deploy prod & test') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    // image 'node:18-alpine'
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
                 }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
             }
             steps {
                 sh '''
@@ -185,10 +184,27 @@ pipeline {
 
                     echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify deploy --dir=build --prod
+
+                    sleep 10
+                    npx playwright test --reporter=html
                 '''
+            }
+            post {
+                always {
+                    publishHTML([   allowMissing: false,
+                                    alwaysLinkToLastBuild: false,
+                                    icon: '',
+                                    keepAll: false,
+                                    reportDir: 'playwright-report',
+                                    reportFiles: 'prod_index.html',
+                                    reportName: 'Prod Playwright HTML Report',
+                                    reportTitles: '',
+                                    useWrapperFileDirectly: true])
+                }
             }    
         }
 
+        /*
         stage('Prod E2E tests') {
             agent {
                 docker {
@@ -214,13 +230,14 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'playwright-report',
-                                    reportFiles: 'prod_index.html',
+                                    reportDir: 'prod-playwright-report',
+                                    reportFiles: 'index.html',
                                     reportName: 'Prod Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
                 }
             }
         }
+        */
     }
 }

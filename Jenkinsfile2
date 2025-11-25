@@ -82,8 +82,8 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'playwright-report',
-                                    reportFiles: 'local_index.html',
+                                    reportDir: 'local-playwright-report',
+                                    reportFiles: 'index.html',
                                     reportName: 'Local Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
@@ -130,13 +130,7 @@ pipeline {
                 CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
             }
             steps {
-                sh '''
-                    # 'serve' installed locally & called using local path
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
-                    npx playwright test --reporter=html
-                '''
+                sh 'npx playwright test --reporter=html'
             }
             post {
                 always {
@@ -144,8 +138,8 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'playwright-report',
-                                    reportFiles: 'staging_index.html',
+                                    reportDir: 'staging-playwright-report',
+                                    reportFiles: 'index.html',
                                     reportName: 'Staging Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
@@ -165,12 +159,17 @@ pipeline {
         stage('Deploy prod') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    // image 'node:18-alpine'
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
                 }
             }
+            //environment {
+            //    CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
+            //}
             steps {
                 sh '''
+                    node --version
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
@@ -178,8 +177,10 @@ pipeline {
                     echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify deploy --dir=build --prod
 
+                    # sleep 5
+                    # npx playwright test --reporter=html
                 '''
-            }    
+            }
         }
 
         stage('Prod E2E tests') {
@@ -192,15 +193,8 @@ pipeline {
             environment {
                 CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
             }
-
             steps {
-                sh '''
-                    # 'serve' installed locally & called using local path
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
-                    npx playwright test --reporter=html
-                '''
+                sh 'npx playwright test --reporter=html'
             }
             post {
                 always {
@@ -208,8 +202,8 @@ pipeline {
                                     alwaysLinkToLastBuild: false,
                                     icon: '',
                                     keepAll: false,
-                                    reportDir: 'playwright-report',
-                                    reportFiles: 'prod_index.html',
+                                    reportDir: 'prod-playwright-report',
+                                    reportFiles: 'index.html',
                                     reportName: 'Prod Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
