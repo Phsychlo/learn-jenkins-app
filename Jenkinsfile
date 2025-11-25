@@ -85,7 +85,7 @@ pipeline {
                                             icon: '',
                                             keepAll: false,
                                             reportDir: 'playwright-report',
-                                            reportFiles: 'index.html',
+                                            reportFiles: 'local_index.html',
                                             reportName: 'Local Playwright HTML Report',
                                             reportTitles: '',
                                             useWrapperFileDirectly: true])
@@ -144,7 +144,7 @@ pipeline {
                                     icon: '',
                                     keepAll: false,
                                     reportDir: 'playwright-report',
-                                    reportFiles: 'index.html',
+                                    reportFiles: 'prod_index.html',
                                     reportName: 'Prod Playwright HTML Report',
                                     reportTitles: '',
                                     useWrapperFileDirectly: true])
