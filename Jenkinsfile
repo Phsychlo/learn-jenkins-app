@@ -49,14 +49,20 @@ pipeline {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    // args '-u root:root' Not good! as common workspace/files is being used which Jenkins may not be able to access subsequently 
                     reuseNode true
                 }
             }
             steps {
                 sh '''
-                    npm install -g serve
-                    serve -s build
-                    npx playwright test
+                    # 'serve' installed as a global dependency & called globally
+                    # npm install -g serve
+                    # serve -s build
+
+                    # 'serve' installed as a locally  & called using local path
+                    npm install serve
+                    # node_modules/.bin/serve -s build
+                    # npx playwright test
                 '''
             }
         }
