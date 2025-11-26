@@ -7,13 +7,14 @@ pipeline {
     }
 
     stages {
-/*    
+        /*    
         stage('Wipe') {
             steps {
                 cleanWs()
             }
         }
-*/
+        */
+        
         stage('Build') {
             // This is a comment line
             agent {
@@ -95,12 +96,15 @@ pipeline {
             }
         }
 
-        stage('Deploy staging') {
+        stage('Deploy staging & test') {
             agent {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = "to be defined"
             }
             steps {
                 sh '''
@@ -113,33 +117,16 @@ pipeline {
                     npm install node-jq
                     npm node-jq --version
                     node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json
-                '''
 
+                    CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json)
+                    npx playwright test --reporter=html
+                '''
+                /*
                 script {
                     env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' netlify_staging.json", returnStdout: true)
                     echo "STAGING_URL is: ${env.STAGING_URL}"
-                }    
-            }    
-        }
-
-       stage('Staging E2E tests') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
                 }
-            }
-            environment {
-                CI_ENVIRONMENT_URL = "$env.STAGING_URL"
-            }
-            steps {
-                sh '''
-                    # 'serve' installed locally & called using local path
-                    # npm install serve
-                    # node_modules/.bin/serve -s build &
-                    # sleep 10
-                    npx playwright test --reporter=html
-                '''
+                */    
             }
             post {
                 always {
@@ -155,6 +142,36 @@ pipeline {
                 }
             }
         }
+
+        /*
+        stage('Staging E2E tests') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = "$env.STAGING_URL"
+            }
+            steps {
+                sh 'npx playwright test --reporter=html'
+            }
+            post {
+                always {
+                    publishHTML([   allowMissing: false,
+                                    alwaysLinkToLastBuild: false,
+                                    icon: '',
+                                    keepAll: false,
+                                    reportDir: 'playwright-report',
+                                    reportFiles: 'index.html',
+                                    reportName: 'Staging Playwright HTML Report',
+                                    reportTitles: '',
+                                    useWrapperFileDirectly: true])
+                }
+            }
+        }
+        */
 
         stage('Approval') {
             steps {

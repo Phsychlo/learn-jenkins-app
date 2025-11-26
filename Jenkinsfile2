@@ -118,7 +118,7 @@ pipeline {
             }    
         }
 
-       stage('Staging E2E tests') {
+        stage('Staging E2E tests') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -156,7 +156,7 @@ pipeline {
             }
         }
 
-        stage('Deploy prod') {
+        stage('Deploy prod & test') {
             agent {
                 docker {
                     // image 'node:18-alpine'
@@ -164,9 +164,9 @@ pipeline {
                     reuseNode true
                 }
             }
-            //environment {
-            //    CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
-            //}
+            environment {
+                CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
+            }
             steps {
                 sh '''
                     node --version
@@ -177,24 +177,9 @@ pipeline {
                     echo "Deploying to production using site_id: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify deploy --dir=build --prod
 
-                    # sleep 5
-                    # npx playwright test --reporter=html
+                    sleep 5
+                    npx playwright test --reporter=html
                 '''
-            }
-        }
-
-        stage('Prod E2E tests') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
-                }
-            }
-            environment {
-                CI_ENVIRONMENT_URL = 'https://brilliant-crumble-30526f.netlify.app'
-            }
-            steps {
-                sh 'npx playwright test --reporter=html'
             }
             post {
                 always {
