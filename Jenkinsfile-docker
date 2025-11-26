@@ -7,7 +7,8 @@ pipeline {
                     node --version
                     netlify --version
                     npm --version
-                    node-jq --version
+                    # node-jq --version
+                    jq --version
                     serve --version
                 '''
             }
