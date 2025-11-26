@@ -132,10 +132,11 @@ pipeline {
                     netlify deploy --dir=build --json > netlify_staging.json
 
                     # npm install node-jq
-                    npm node-jq --version
-                    node-jq -r '.deploy_url' netlify_staging.json
+                    # npm node-jq --version
+                    jq --version
+                    jq -r '.deploy_url' netlify_staging.json
 
-                    CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' netlify_staging.json)
+                    CI_ENVIRONMENT_URL=$(jq -r '.deploy_url' netlify_staging.json)
                     npx playwright test --reporter=html
                 '''
                 /*
