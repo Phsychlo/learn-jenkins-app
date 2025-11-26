@@ -44,7 +44,7 @@ pipeline {
 
         stage ('Tests') {
             parallel {
-
+                /*
                 stage('Unit tests') {
                     agent {
                         docker {
@@ -54,7 +54,7 @@ pipeline {
                     }
                     steps {
                         sh '''
-                            # test -f ./build/index.html
+                            test -f ./build/index.html
                             npm test
                         '''
                     }
@@ -64,30 +64,38 @@ pipeline {
                          }
                     }
                 }
-            
+                */
+
                 stage('Local E2E tests') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            // image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                             // args '-u root:root' Not good! as common workspace/files is being used which Jenkins may not be able to access subsequently 
+                            image 'my-playwright'
                             reuseNode true
                         }
                     }
                     steps {
                         sh '''
+                            test -f ./build/index.html
+                            npm test
+
                             # 'serve' installed as a global dependency & called globally
                             # npm install -g serve
-                            # serve -s build
+                            serve -s build &
 
                             # 'serve' installed locally & called using local path
-                            npm install serve
-                            node_modules/.bin/serve -s build &
+                            # npm install serve
+                            # node_modules/.bin/serve -s build &
+
                             sleep 10
                             npx playwright test --reporter=html
                         '''
                     }
                     post {
                         always {
+                            junit 'jtest-results/junit.xml'
+
                             publishHTML([   allowMissing: false,
                                             alwaysLinkToLastBuild: false,
                                             icon: '',
