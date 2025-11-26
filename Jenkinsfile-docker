@@ -1,4 +1,20 @@
 pipeline {
+    agent { dockerfile true }
+    stages {
+        stage('Test') {
+            steps {
+                sh '''
+                    node --version
+                    netlify --version
+                    npm --version
+                    node-jq --version
+                    serve --version
+                '''
+            }
+        }
+    }
+
+    /*
     agent any
 
     stages {
@@ -8,4 +24,5 @@ pipeline {
             }
         }
     }
+    */
 }
