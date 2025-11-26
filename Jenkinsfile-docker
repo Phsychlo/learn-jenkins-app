@@ -1,4 +1,5 @@
 pipeline {
+    /*
     agent { dockerfile true }
     stages {
         stage('Test') {
@@ -14,8 +15,8 @@ pipeline {
             }
         }
     }
+    */
 
-    /*
     agent any
 
     stages {
@@ -25,5 +26,4 @@ pipeline {
             }
         }
     }
-    */
 }
