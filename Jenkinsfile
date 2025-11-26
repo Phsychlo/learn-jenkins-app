@@ -4,6 +4,7 @@ pipeline {
     environment {
         NETLIFY_SITE_ID = '621090b2-6508-48b7-9f5e-ff9991ccd423'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token')
+        REACT_APP_VERSION = "1.0.$BUILD_ID"
     }
 
     stages {
@@ -14,7 +15,7 @@ pipeline {
             }
         }
         */
-        
+
         stage('Build') {
             // This is a comment line
             agent {
@@ -173,6 +174,7 @@ pipeline {
         }
         */
 
+        /*
         stage('Approval') {
             steps {
                 echo 'Approving ...'
@@ -181,6 +183,7 @@ pipeline {
                 }
             }
         }
+        */
 
         stage('Deploy prod & test') {
             agent {
