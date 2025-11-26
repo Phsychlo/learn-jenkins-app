@@ -108,7 +108,7 @@ pipeline {
                 docker {
                     // image 'node:18-alpine'
                     // image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    image my-playwright
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
