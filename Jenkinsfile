@@ -25,7 +25,7 @@ pipeline {
         stage('AWS') {
             agent {
                 docker {
-                    image 'amazon/aws-cli'
+                    image 'amazon/aws-cli:2.33.1'
                     args "--entrypoint=''"
                 }
             }
@@ -121,6 +121,15 @@ pipeline {
                                             useWrapperFileDirectly: true])
                         }
                     }
+                }
+            }
+        }
+
+        stage('Approval') {
+            steps {
+                echo 'Approving ...'
+                timeout(time: 10, unit: 'MINUTES') {
+                    input message: 'Ready to deploy?', ok: 'Yes, deploy', cancel: 'No, abort'
                 }
             }
         }
