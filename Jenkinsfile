@@ -21,6 +21,19 @@ pipeline {
             }
         }
         */
+        
+        stage('AWS') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli'
+                }
+            }
+            steps {
+                sh '''
+                    aws --version
+                '''
+            }
+        }
 
         stage('Build') {
             // This is a comment line
