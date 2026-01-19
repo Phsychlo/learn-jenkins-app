@@ -34,6 +34,8 @@ pipeline {
                     sh '''
                         aws --version
                         aws s3 ls
+                        echo "Hello s3!" > index.hml
+                        aws s3 cp test.txt s3://c4by-jenkins-s3/index.html
                     '''
                 }
             }
